@@ -130,35 +130,49 @@ router.get('/-request/:bloodRequestId', auth,  oneBloodRequestById);
  */
 router.post("/register", registerValidate, register);
 
-
 /**
  * @swagger
- * /verify-donor/{token}:
- *   get:
- *     summary: Verify Donor via email token
- *     tags: [Donor]
- *     parameters:
- *       - name: token
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *         example: "someVerificationToken"
+ * /verify-otp:
+ *   post:
+ *     summary: Verify donor or hospital using OTP
+ *     tags: [Verification]
+ *     description: Verify a donor or hospital account using the OTP sent to their email.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - otp
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: lifelink@mail.com
+ *               otp:
+ *                 type: string
+ *                 example: "123456"
  *     responses:
  *       200:
- *         description: Donor verified successfully
+ *         description: Account verified successfully
  *       400:
- *         description: Invalid or expired token
+ *         description: Invalid or expired OTP / already verified / missing fields
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
  */
-router.get('/verify-donor/:token', verifyDonors);
+router.post('/verify-otp', verifyDonors);
+
 
 /**
  * @swagger
- * /re-verify:
+ * /resend-otp:
  *   post:
- *     summary: Resend verification email
- *     tags: [Donor]
- *     description: Resend a verification email to the donor.
+ *     summary: Resend OTP for verification
+ *     tags: [Verification]
+ *     description: Resend a new OTP to the user's registered email.
  *     requestBody:
  *       required: true
  *       content:
@@ -170,19 +184,18 @@ router.get('/verify-donor/:token', verifyDonors);
  *             properties:
  *               email:
  *                 type: string
- *                 example: LifeLink@mail.com
+ *                 example: lifelink@mail.com
  *     responses:
  *       200:
- *         description: New verification link sent successfully.
+ *         description: A new OTP has been sent to the email
  *       400:
- *         description: Donor is already verified or email is missing.
+ *         description: User is already verified or email is missing
  *       404:
- *         description: Donor not found.
+ *         description: User not found
  *       500:
- *         description: Internal server error.
+ *         description: Internal server error
  */
-
-router.post('/re-verify', resendVerificationEmail);
+router.post('/resend-otp', resendVerificationEmail);
 
 /**
  * @swagger

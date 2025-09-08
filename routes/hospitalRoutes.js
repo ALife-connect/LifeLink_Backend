@@ -617,7 +617,7 @@ router.post('/kyc/kyc', auth, roleAuth(['hospital']), kycUpload, submitKYC);
 
 /**
  * @swagger
- * /api/appointments/respond/{appointmentId}:
+ * /appointments/respond/{appointmentId}:
  *   patch:
  *     summary: Hospital responds to an appointment request
  *     description: Confirm, cancel, or reschedule a donor's appointment request.

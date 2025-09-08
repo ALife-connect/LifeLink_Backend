@@ -101,7 +101,7 @@ exports.verifyPayment = async (req, res) => {
         const { data } = response?.data;
 
         if (data?.status === 'success') {
-            await transactionModel.findOneAndUpdate({ reference }, { status: 'success' }, { new: true });
+            const transaction = await transactionModel.findOneAndUpdate({ reference }, { status: 'success' }, { new: true });
                             
             const { hospital } = transaction;
             await hospitalModel.findByIdAndUpdate(hospital, {

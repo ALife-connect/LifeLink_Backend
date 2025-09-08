@@ -39,6 +39,19 @@ const HospitalSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Transaction',
   },
+    emailOtp: {
+      type: String
+    },
+    phoneOtp: {
+      type: String
+    },
+    otpExpires: {
+      type: Date,
+      default: null
+    },
+    resetOtp: { 
+      type: String 
+    },
 
   kycCompleted: { type: Boolean, default: false } 
 }, { timestamps: true });

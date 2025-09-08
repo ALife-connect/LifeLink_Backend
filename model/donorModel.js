@@ -57,6 +57,20 @@ const donorSchema = new mongoose.Schema(
       default: 'pending'
     },
     
+    emailOtp: {
+      type: String
+    },
+    phoneOtp: {
+      type: String
+    },
+    otpExpires: {
+      type: Date,
+      default: null
+    },
+    resetOtp: { 
+      type: String 
+    },
+    
     donations:[{
       hospitalId: mongoose.Schema.Types.ObjectId,
       date: Date,

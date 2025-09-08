@@ -12,6 +12,14 @@
 const hospitalModel = require('../model/hospitalModel');
 const {appointmentModel} = require('../model/appointmentModel');
 const moment = require('moment');
+const otpGenerator = require('otp-generator');
+const generateOTP = () => {
+  return otpGenerator.generate(6, { 
+    upperCaseAlphabets: false, 
+    lowerCaseAlphabets: false, 
+    specialChars: false 
+  });
+};
 
 
 const generatedToken = (id) => {
@@ -37,6 +45,11 @@ exports.register = async (req, res) => {
         //Salt and hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
+
+          const emailOtp = generateOTP();
+          const phoneOtp = generateOTP();
+          const otpExpires = Date.now() + 5 * 60 * 1000; 
+
         //Create user
         const donor = new donorModel({
           fullName: fullName.trim(),
@@ -44,22 +57,26 @@ exports.register = async (req, res) => {
           password: hashedPassword,
           bloodType,
           location, 
-          age
+          age,
+          emailOtp,
+          phoneOtp,
+          otpExpires
         });
-        const token = await jwt.sign({ donorId: donor._id }, process.env.key, { expiresIn: "10mins" });
-        const link = `lifelink-xi.vercel.app/verifymail/${token}`
+        await donor.save();
+        // const token = await jwt.sign({ donorId: donor._id }, process.env.key, { expiresIn: "10mins" });
+        // const link = `lifelink-xi.vercel.app/verifymail/${token}`
         // `${req.protocol}://${req.get("host")}/api/v1/verify-user/${token}`;
         const firstName = donor.fullName.split(" ")[0];
         const mailDetails = {
         email: donor.email,
         subject: "🌹 Welcome to ALIFE",
-        html: welcomeMail(firstName, link),
+        html: welcomeMail(firstName, emailOtp),
       };
 
-      await donor.save();
+      
       await sendMail(mailDetails);
         res.status(201).json({
-          message: "Donor created successfully",
+          message: "Donor created successfully. verify Otp sent to your mail.",
           data: donor,
           token
         });
@@ -72,155 +89,137 @@ exports.register = async (req, res) => {
 
 exports.verifyDonors = async (req, res) => {
   try {
-    const { token } = req.params;
+    const { email, phoneNumber, otp } = req.body;
 
-    let payload;
-    try {
-      payload = jwt.verify(token, process.env.key);
-    } catch (error) {
-      if (error instanceof jwt.TokenExpiredError) {
-        const decodedToken = jwt.decode(token);
-        if (!decodedToken) {
-          return res.status(400).json({ message: 'Invalid Token' });
-        }
-
-        const { donorId, hospitalId } = decodedToken;
-
-        let user;
-        if (donorId) {
-          user = await donorModel.findById(donorId);
-        } else if (hospitalId) {
-          user = await hospitalModel.findById(hospitalId);
-        }
-
-        if (!user) {
-          return res.status(404).json({ message: 'User not found' });
-        }
-
-        if (user.isVerified) {
-          return res.status(400).json({
-            message: 'User has already been verified. Please proceed to login.',
-          });
-        }
-
-        // Generate a new token
-        const newToken = jwt.sign(
-          donorId ? { donorId: user._id } : { hospitalId: user._id },
-          process.env.key,
-          { expiresIn: '3mins' }
-        );
-
-        const link = `https://lifelink-xi.vercel.app/verifymail/${newToken}`;
-        const firstName = user.fullName.split(' ')[0];
-
-        // Send verification email
-        const mailDetails = {
-          email: user.email,
-          subject: 'Verification Link',
-          html: welcomeMail(firstName, link),
-        };
-        await sendMail(mailDetails);
-
-        return res.status(200).json({
-          message: 'Verification link expired. A new link has been sent to your email.',
-        });
-      }
-
-      return res.status(400).json({ message: 'Invalid token' });
-    }
-
-    // Token is valid
-    const { donorId, hospitalId } = payload;
-
-    let user;
-    if (donorId) {
-      user = await donorModel.findById(donorId);
-    } else if (hospitalId) {
-      user = await hospitalModel.findById(hospitalId);
-    }
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    if (user.isVerified) {
+    
+    if ((!email && !phoneNumber) || !otp) {
       return res.status(400).json({
-        message: 'User has already been verified. Please proceed to login.',
+        status: false,
+        message: "Email or phone number and OTP are required"
       });
     }
 
-    user.isVerified = true;
-    await user.save();
+    let user;
 
-    res.status(200).json({
-      message: 'Account verified successfully',
-    });
     
+    if (email) {
+      user = await donorModel.findOne({ email });
+      if (!user) {
+        user = await hospitalModel.findOne({ email });
+      }
+    } else if (phoneNumber) {
+      user = await donorModel.findOne({ phoneNumber });
+      if (!user) {
+        user = await hospitalModel.findOne({ phoneNumber });
+      }
+    }
+
+ 
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+  
+    if (user.isVerified) {
+      return res.status(400).json({
+        message: "User has already been verified. Please proceed to login."
+      });
+    }
+
+    if (
+      user.otp !== otp ||
+      !user.otpExpires ||
+      user.otpExpires < new Date()
+    ) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    
+    user.isVerified = true;
+    user.otp = undefined; 
+    user.otpExpires = undefined;
+
+    return res.status(200).json({
+      status: true,
+      message: "Account verified successfully"
+    });
+
   } catch (error) {
-    console.error('Error verifying user:'+ error.message);
+    
     return res.status(500).json({
-      message: 'Internal Server Error: ' + error.message
+      status: false,
+      message: "Internal Server Error: " + error.message
     });
   }
 };
+
 exports.resendVerificationEmail = async (req, res) => {
   try {
     const { email } = req.body;
 
     if (!email) {
       return res.status(400).json({
-        message: 'Please enter your Email Address'
+        message: "Please enter your Email Address"
       });
     }
 
-
     let user = await donorModel.findOne({ email: email.toLowerCase() });
-    let userType = 'donor';
+    let userType = "donor";
     if (!user) {
       user = await hospitalModel.findOne({ email: email.toLowerCase() });
-      userType = 'hospital';
+      userType = "hospital";
     }
 
     if (!user) {
       return res.status(404).json({
-        message: 'User not found'
+        message: "User not found"
       });
     }
 
     if (user.isVerified) {
       return res.status(400).json({
-        message: 'User has already been verified, please proceed to login'
+        message: "User has already been verified, please proceed to login"
       });
     }
 
-    // Generate token
-    const tokenPayload = userType === 'donor' ? { donorId: user._id } : { hospitalId: user._id };
-    const token = jwt.sign(tokenPayload, process.env.key, { expiresIn: '10mins' });
+    
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // expires in 10 mins
 
-    const link = `https://lifelink-xi.vercel.app/verifymail/${token}`;
+    
+    user.otp = otp;
+    user.otpExpires = otpExpires;
+    await user.save();
 
-    const firstName = user.fullName.split(' ')[0];
+    const firstName = user.fullName.split(" ")[0];
 
     // Prepare email
     const mailDetails = {
       email: user.email,
-      subject: 'Verification Link',
-      html: welcomeMail(firstName, link)
+      subject: "Your Verification OTP",
+      html: `
+        <p>Hi ${firstName},</p>
+        <p>Your OTP for verification is: <b>${otp}</b></p>
+        <p>This code will expire in 10 minutes.</p>
+        <p>If you did not request this, please ignore this email.</p>
+      `
     };
 
     await sendMail(mailDetails);
 
     res.status(200).json({
-      message: 'New verification link sent, please check your email'
+      message: "A new OTP has been sent to your email",
+      userType
     });
 
   } catch (error) {
-    console.error('Error resending verification email:', error.message);
+    console.error("Error resending OTP:", error.message);
     res.status(500).json({
-      message: 'Internal Server Error: ' + error.message
+      message: "Internal Server Error: " + error.message
     });
   }
 };
+
 exports.login = async (req, res)=>{
       try{
         const {email, password} = req.body;
