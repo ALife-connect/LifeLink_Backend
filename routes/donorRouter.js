@@ -813,7 +813,7 @@ router.put('/update-profile', auth, UpdateDonorDetails);
  *   post:
  *     summary: Forgot password
  *     tags: [Donor]
- *     description: Send a password reset link to the donor's email.
+ *     description: Send a password reset otp to the donor's email.
  *     requestBody:
  *       required: true
  *       content:
@@ -826,7 +826,7 @@ router.put('/update-profile', auth, UpdateDonorDetails);
  *                 example: LifeLink@Mail.com
  *     responses:
  *       200:
- *         description: Reset password link sent successfully
+ *         description: Reset password otp sent successfully
  *       404:
  *         description: Email not found
  *       500:
@@ -834,20 +834,14 @@ router.put('/update-profile', auth, UpdateDonorDetails);
  */
 router.post("/forgotPassword", forgotPassword);
 
+
 /**
  * @swagger
- * /resetPassword/{token}:
+ * /resetPassword:
  *   post:
- *     summary: Reset password
+ *     summary: Reset password using OTP
  *     tags: [Donor]
- *     description: Reset donor's password using a token and new password.
- *     parameters:
- *       - in: path
- *         name: token
- *         required: true
- *         schema:
- *           type: string
- *         description: Donor TOKEN
+ *     description: Reset donor's password using email, OTP, and new password.
  *     requestBody:
  *       required: true
  *       content:
@@ -855,18 +849,26 @@ router.post("/forgotPassword", forgotPassword);
  *           schema:
  *             type: object
  *             properties:
+ *               email:
+ *                 type: string
+ *                 example: donor@example.com
+ *               otp:
+ *                 type: string
+ *                 example: "123456"
  *               newPassword:
  *                 type: string
  *                 example: NewSecurePassword123
  *     responses:
  *       200:
  *         description: Password reset successfully
+ *       400:
+ *         description: Invalid or expired OTP
  *       404:
  *         description: Donor not found
  *       500:
  *         description: Internal server error
  */
-router.post("/resetPassword/:token", resetNewPassword);
+router.post("/resetPassword", resetNewPassword);
 
 
 /**

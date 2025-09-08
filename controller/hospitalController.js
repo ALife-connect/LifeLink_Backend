@@ -2,6 +2,7 @@ const {donorModel}  = require("../model/donorModel");
 const  hospitalModel  = require("../model/hospitalModel");
 const Hospital = require("../model/hospitalModel"); 
 const {appointmentModel} = require("../model/appointmentModel"); 
+const crypto = require("crypto");
 const KYC = require('../model/kycModel');
 const bcrypt = require("bcrypt"); 
 const { unlink } = require('fs/promises'); 
@@ -48,6 +49,10 @@ exports.register =async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    const emailOtp = generateOTP();
+          const phoneOtp = generateOTP();
+          const otpExpires = Date.now() + 5 * 60 * 1000; 
+
     const hospital = new hospitalModel({
       fullName: fullName.trim(),
       email: emailNormalized,
@@ -56,16 +61,19 @@ exports.register =async (req, res) => {
       password: hashedPassword,
       phone: phone.trim().toLowerCase(),
       city: city.trim().toLowerCase(),
-    });
+       emailOtp,
+          phoneOtp,
+          otpExpires
+    });await hospital.save();
 
-      const token = await jwt.sign({ hospitalId: hospital._id }, process.env.key, { expiresIn: "10mins" });
-        const link = `lifelink-xi.vercel.app/verifymail/${token}`
-        // `${req.protocol}://${req.get("host")}/api/v1/verify-user/${token}`;
+      // const token = await jwt.sign({ hospitalId: hospital._id }, process.env.key, { expiresIn: "10mins" });
+      //   const link = `lifelink-xi.vercel.app/verifymail/${token}`
+      //   // `${req.protocol}://${req.get("host")}/api/v1/verify-user/${token}`;
         const hospitalName = hospital.fullName.split(" ")[0];
         const mailDetails = {
         email: hospital.email,
         subject: "Welcome to ALIFE",
-        html: welcomeMail(hospitalName, link),
+        html: welcomeMail(hospitalName, emailOtp),
       };
     await hospital.save();
     await sendMail(mailDetails)
@@ -391,157 +399,107 @@ exports.deleteAccount = async (req, res) => {
 
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
+
   if (!email) {
-    return res.status(400).json({ message: 'Email is required' });
+    return res.status(400).json({ status: false, message: "Email is required" });
   }
 
   try {
     const hospital = await hospitalModel.findOne({ email: email.toLowerCase() });
     if (!hospital) {
-      return res.status(404).json({ message: 'Hospital not found' });
+      return res.status(404).json({ status: false, message: "Hospital not found" });
     }
 
-    const token = jwt.sign({ id: hospital._id }, process.env.key, { expiresIn: '1h' });
+    // Generate a 6-digit OTP
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const otpExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
 
-    const resetLink = `https://lifelink-xi.vercel.app/resetpassword/${token}`;
+    hospital.resetOtp = otp;
+    hospital.resetOtpExpires = otpExpires;
+    await hospital.save();
 
-    // HTML email content
+    // Email HTML template
     const htmlContent = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <title>Password Reset</title>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            background-color: #f6f9fc;
-            margin: 0;
-            padding: 20px;
-          }
-          .container {
-            max-width: 600px;
-            margin: auto;
-            background: #fff;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
-            padding: 30px;
-            text-align: center;
-          }
-          .button {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 12px 25px;
-            font-size: 16px;
-            color: #ffffff;
-            background: linear-gradient(90deg, #0077b6, #e63946);
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-          }
-          .button:hover {
-            background: linear-gradient(90deg, #005f87, #c5303f);
-          }
-          .footer {
-            margin-top: 20px;
-            font-size: 12px;
-            color: #999;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <h2>Password Reset Request</h2>
-          <p>Hello,</p>
-          <p>We received a request to reset your password for your ALIFE account.</p>
-          <p>Click the button below to reset your password:</p>
-
-           <!-- ✅ Mobile-responsive clickable reset button using table for email compatibility -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 0 auto;">
-            <tr>
-              <td align="center" bgcolor="#007bff" style="border-radius: 5px;">
-                <a href="${resetLink}"
-                   target="_blank"
-                   style="
-                     display: inline-block;
-                     font-size: 16px;
-                     font-family: Arial, sans-serif;
-                     color: #ffffff;
-                     text-decoration: none;
-                     padding: 12px 24px;
-                     border-radius: 5px;
-                     background-color: #007bff;
-                     border: 1px solid #007bff;
-                     width: 100%;
-                     max-width: 300px;
-                     box-sizing: border-box;
-                     text-align: center;">
-                   Reset Password
-                </a>
-              </td>
-            </tr>
-          </table>
-          <p>If you did not request this, please ignore this email.</p>
-          <div class="footer">
-            &copy; ${new Date().getFullYear()} ALIFE. All rights reserved.
-          </div>
-        </div>
-      </body>
-      </html>
+      <div style="font-family: Arial, sans-serif; padding: 20px;">
+        <h2>Password Reset Request</h2>
+        <p>Hello ${hospital.name || "Hospital"},</p>
+        <p>You requested to reset your password. Use the OTP below:</p>
+        <h3 style="color:#0077b6; font-size:22px;">${otp}</h3>
+        <p>This OTP will expire in 15 minutes.</p>
+        <p>If you didn’t request this, please ignore this email.</p>
+        <br/>
+        <p>&copy; ${new Date().getFullYear()} ALIFE. All rights reserved.</p>
+      </div>
     `;
-    const mailDetails = {
+
+    await sendEmail({
       email: hospital.email,
-      subject: "passWord Reset Request",
+      subject: "Password Reset OTP",
       html: htmlContent,
-    };
-    // Send the reset email with HTML
-    await sendEmail(mailDetails);
+    });
 
     res.status(200).json({
-      message: 'Password reset link sent to your email',
-      token: token
+      status: true,
+      message: "OTP sent to your email",
     });
   } catch (error) {
-    res.status(500).json({ message: 'Error sending password reset email', error: error.message });
+    res.status(500).json({
+      status: false,
+      message: "Error sending OTP: " + error.message,
+    });
   }
 };
 
+// ✅ Step 2: Reset password with OTP
 exports.resetPassword = async (req, res) => {
-  const { token } = req.params; // 🔥 Get token from URL params
-  const { newPassword } = req.body; // 🔥 Get new password from request body
-
-  if (!token || !newPassword) {
-    return res.status(400).json({ message: 'Token and new password are required' });
-  }
-
   try {
-    // Verify the token
-    const decoded = jwt.verify(token, process.env.KEY);
-    const hospitalId = decoded.id;
+    const { email, otp, newPassword } = req.body;
 
-    // Find hospital by ID
-    const hospital = await hospitalModel.findById(hospitalId);
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ status: false, message: "Email, OTP, and new password are required" });
+    }
+
+    const hospital = await hospitalModel.findOne({ email: email.toLowerCase() });
     if (!hospital) {
-      return res.status(404).json({ message: 'Hospital not found' });
+      return res.status(404).json({ status: false, message: "Hospital not found" });
+    }
+
+    // Check OTP
+    if (!hospital.resetOtp || !hospital.resetOtpExpires) {
+      return res.status(400).json({ status: false, message: "No OTP request found. Please request a new one." });
+    }
+
+    if (hospital.resetOtp !== otp) {
+      return res.status(400).json({ status: false, message: "Invalid OTP" });
+    }
+
+    if (hospital.resetOtpExpires < Date.now()) {
+      return res.status(400).json({ status: false, message: "OTP expired. Please request a new one." });
     }
 
     // Hash the new password
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    hospital.password = await bcrypt.hash(newPassword, salt);
 
-    // Update password
-    hospital.password = hashedPassword;
+    // Clear OTP fields
+    hospital.resetOtp = undefined;
+    hospital.resetOtpExpires = undefined;
+
     await hospital.save();
 
-    res.status(200).json({ message: 'Password updated successfully' });
+    res.status(200).json({
+      status: true,
+      message: "Password updated successfully",
+    });
   } catch (error) {
-    if (error.name === 'TokenExpiredError') {
-      return res.status(400).json({ message: 'Token has expired. Please request a new password reset link.' });
-    }
-    res.status(500).json({ message: 'Error resetting password: ' + error.message });
+    res.status(500).json({
+      status: false,
+      message: "Error resetting password: " + error.message,
+    });
   }
 };
+
+
 
 
 

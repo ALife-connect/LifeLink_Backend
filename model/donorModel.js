@@ -70,6 +70,9 @@ const donorSchema = new mongoose.Schema(
     resetOtp: { 
       type: String 
     },
+    resetOtpExpires: { 
+      type: Date 
+    },
     
     donations:[{
       hospitalId: mongoose.Schema.Types.ObjectId,

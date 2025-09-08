@@ -52,6 +52,9 @@ const HospitalSchema = new mongoose.Schema({
     resetOtp: { 
       type: String 
     },
+    resetOtpExpires: { 
+      type: Date 
+    },
 
   kycCompleted: { type: Boolean, default: false } 
 }, { timestamps: true });

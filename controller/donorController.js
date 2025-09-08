@@ -615,76 +615,127 @@ exports.UpdateDonorDetails = async (req, res) =>{
   }
 };
 
-exports.forgotPassword = async (req, res)=>{
-      try{
-          const { email } = req.body;
-          const checkEmail = await donorModel.findOne({email:email.toLowerCase()})
-          if(!checkEmail){
-              return res.status(404).json({
-                  message: 'Email not found'
-              })
-          }
-          const token = jwt.sign({id:checkEmail._id},process.env.key, {expiresIn: '20min'})
-          const link = `https://lifelink-xi.vercel.app/resetpassword/${token}`
-          const subject = "Reset Password" + " " + checkEmail.fullName.split(" ")[0];
-          const text = `Reset Password ${checkEmail.fullName}, kindly use this link to reset your password ${link} `;
-          sendMail({subject:subject, email:checkEmail.email, html:resetMail(link, checkEmail.fullName)})
-          res.status(200).json({
-              message: 'Reset password link sent successfully'
-          })
-                          
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
 
-      }catch(error){
-          res.status(500).json({
-              message: error.message
-          })
-      }
-  };
+    const user = await donorModel.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({
+        status: false,
+        message: 'Email not found'
+      });
+    }
 
-exports.resetNewPassword = async (req, res) =>{
-      try{
-        const { token } = req.params;
-          const {newPassword} = req.body;
-          if (!token){
-            return res.status(400).json({
-              message: "token is required"
-            })
-          }
-          const decoded = await jwt.verify(token, process.env.key);
-          if(!decoded){
-            return res.status(401).json({
-              message: "Invalid Token"
-            })
-          }
-          const userId = decoded.id;
+    // generate OTP (6 digits)
+    const otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false
+    });
 
-          const checkdonor = await donorModel.findById(userId)
-          if(!checkdonor){
-              return res.status(404).json({
-                  message: 'Donor not found'
-              })
-          }
-          if(!newPassword){
-            return res.status(400).json({
-              message: "new Password is required"
-            })
-          }
-          
-          const salt = await bcrypt.genSaltSync(10);
-          const hash = await bcrypt.hashSync(newPassword, salt);
-        
-          await donorModel.findByIdAndUpdate(req.params.id, {password:hash})
-          
-          res.status(200).json({
-              message: 'Password change Successfully'
-          })
+    
+    const expires = Date.now() + 10 * 60 * 1000;
 
-      }catch(error){
-          res.status(500).json({
-              message: error.message
-          })
-      }
-  };
+    
+    user.resetOtp = otp;
+    user.resetOtpExpires = expires;
+    await user.save();
+
+    // email subject + message
+    const subject = "Reset Password Request";
+    const html = `
+      <p>Hello ${user.fullName.split(" ")[0]},</p>
+      <p>You requested to reset your password. Use the OTP below:</p>
+      <h2>${otp}</h2>
+      <p>This OTP will expire in 10 minutes.</p>
+    `;
+
+    await sendMail({
+      subject,
+      email: user.email,
+      html
+    });
+
+    res.status(200).json({
+      status: true,
+      message: 'Reset password OTP sent successfully',
+      otp 
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      message: error.message
+    });
+  }
+};
+
+exports.resetNewPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({
+        status: false,
+        message: "Email, OTP, and new password are required"
+      });
+    }
+
+    // find donor
+    const donor = await donorModel.findOne({ email: email.toLowerCase() });
+    if (!donor) {
+      return res.status(404).json({
+        status: false,
+        message: "Donor not found"
+      });
+    }
+
+    // check otp validity
+    if (!donor.resetOtp || !donor.resetOtpExpires) {
+      return res.status(400).json({
+        status: false,
+        message: "No OTP request found. Please request a new one."
+      });
+    }
+
+    if (donor.resetOtp !== otp) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid OTP"
+      });
+    }
+
+    if (donor.resetOtpExpires < Date.now()) {
+      return res.status(400).json({
+        status: false,
+        message: "OTP expired. Please request a new one."
+      });
+    }
+
+    // hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    donor.password = hashedPassword;
+    donor.resetOtp = undefined;
+    donor.resetOtpExpires = undefined;
+
+    await donor.save();
+
+    res.status(200).json({
+      status: true,
+      message: "Password changed successfully"
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      message: error.message
+    });
+  }
+};
+
  
 exports.changePassword = async (req, res) =>{
       try{

@@ -92,69 +92,100 @@ router.post('/hospital/register', register);
 
 router.post('/hospital/login', login);
 
-
 /**
  * @swagger
- * /hospital/forgotPassword:
+ * /hospital/forgot-password:
  *   post:
- *     summary: Send password reset link to hospital email
- *     tags: [Hospital]
+ *     summary: Request password reset via OTP
+ *     description: |
+ *       Sends a 6-digit OTP to the user's registered email for password reset. 
+ *       The OTP expires in 10 minutes.  
+ *       This replaces the old reset-password link flow.
+ *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - email
  *             properties:
  *               email:
  *                 type: string
+ *                 example: johndoe@example.com
  *     responses:
  *       200:
- *         description: Password reset link sent successfully
- *       400:
- *         description: Bad Request – Email is required
+ *         description: OTP sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Reset password OTP sent successfully
  *       404:
- *         description: Not Found – Hospital not found
+ *         description: Email not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Email not found
  *       500:
- *         description: Internal server error
+ *         description: Server error
  */
-router.post('/hospital/forgotPassword', forgotPassword);
+router.post('/hospital/forgot-Password', forgotPassword);
+
 
 /**
  * @swagger
- * /hospital/resetPassword/{token}:
+ * /hospital/reset-Password:
  *   patch:
- *     summary: Reset hospital password using token
+ *     summary: Reset hospital password using OTP
  *     tags: [Hospital]
- *     parameters:
- *       - in: path
- *         name: token
- *         required: true
- *         schema:
- *           type: string
- *         description: Password reset token
+ *     description: Reset hospital's password by verifying OTP sent to their email.
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - email
+ *               - otp
+ *               - newPassword
  *             properties:
+ *               email:
+ *                 type: string
+ *                 example: hospital@example.com
+ *               otp:
+ *                 type: string
+ *                 example: "123456"
  *               newPassword:
  *                 type: string
- *                 example: yourNewSecurePassword123
+ *                 example: YourNewSecurePassword123
  *     responses:
  *       200:
  *         description: Password updated successfully
  *       400:
- *         description: Bad Request – Token or new password missing
+ *         description: Bad Request – Email, OTP, or new password missing/invalid
  *       404:
  *         description: Hospital not found
  *       500:
  *         description: Internal server error
  */
 
-router.post('/hospital/resetPassword/:token', resetPassword);
+router.post('/hospital/reset-Password', resetPassword);
 
 /**
  * @swagger
