@@ -31,11 +31,12 @@ const welcomeMail = (fullName, otp) => {
 
       <!-- Footer -->
       <div style="background:#f0f4fa; padding:15px; text-align:center; font-size:12px; color:#888;">
-        © ${new Date().getFullYear()} 🌹ALIFE🌹. All rights reserved.
+        © ${new Date().getFullYear()} 🌹ALIFE. All rights reserved.
      
         </div>
       </div>
     </div>
   `;
 };
+
 module.exports = welcomeMail;

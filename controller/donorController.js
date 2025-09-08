@@ -357,7 +357,7 @@ exports.cancelAppointment = async (req, res) => {
       });
     }
 
-    appointment.status = 'cancelled';
+    appointment.status = 'cancel';
     await appointment.save();
 
     res.status(200).json({
