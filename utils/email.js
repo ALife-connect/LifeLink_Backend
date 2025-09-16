@@ -2,6 +2,8 @@ const nodeMailer = require('nodemailer');
 require('dotenv').config()
 
 const sendMail = async ( options ) => {
+    console.log("attempting to send mail");
+    
     const transporter = await nodeMailer.createTransport({
         service : "gmail",
         secure: true,

@@ -407,6 +407,7 @@ exports.scheduleDonation = async (req, res)=> {
       const updated = await donorModel.findByIdAndUpdate(req.user._id, { status: 'pending'}, {new: true});
       const token = generatedToken(updated._id);
       res.status(201).json({
+        status: true,
         message: "donation appointment scheduled",
         scheduledDate: moment(selectedDate).format('YYYY-MM-DD'),
         scheduledTime: time,
@@ -414,6 +415,7 @@ exports.scheduleDonation = async (req, res)=> {
       })
     } catch (error) {
       res.status(500).json({
+        status:false,
         message: 'Internal Server Error' + error.message
       })
     }
@@ -659,8 +661,7 @@ exports.forgotPassword = async (req, res) => {
 
     res.status(200).json({
       status: true,
-      message: 'Reset password OTP sent successfully',
-      otp 
+      message: 'Reset password OTP sent successfully' 
     });
 
   } catch (error) {
@@ -873,6 +874,7 @@ exports.bookAppointment = async (req, res) => {
     
   
       res.status(200).json({
+        status: true,
         message: 'Appointment booked successfully',
         appointment: {
           donorName: populatedAppointment.donor.fullName,
