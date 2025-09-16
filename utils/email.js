@@ -1,24 +1,25 @@
-const nodeMailer = require('nodemailer'); 
-require('dotenv').config()
+require("dotenv").config();
+const sgMail = require("@sendgrid/mail");
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-const sendMail = async ( options ) => {
-    console.log("attempting to send mail");
-    
-    const transporter = await nodeMailer.createTransport({
-        service : "gmail",
-        secure: true,
-        auth: {
-            user: process.env.userEmail,
-            pass: process.env.passEmail
-        },
-        tls:{
-            //Bypass SSL verification
-            rejectUnauthorized:false,
-        }
-    });
-    const mailOption = {
-        subject: options.subject, text:options.text, from:`"LifeLink"<${process.env.userEmail}>`, to:options.email, html:options.html
+const sendMail = async (options) => {
+  try {
+    console.log("Attempting to send email...");
+
+    const msg = {
+      to: options.email,
+      from: `"LifeLink"<${process.env.userEmail}>`,
+      subject: options.subject,
+      text: options.text,
+      html: options.html,
     };
-    await transporter.sendMail(mailOption)
-}
-module.exports = sendMail;  
+
+    await sgMail.send(msg);
+    console.log(" Email sent successfully");
+  } catch (error) {
+    console.error(" Error sending email:", error.response?.body || error.message);
+    throw new Error("Email sending failed");
+  }
+};
+
+module.exports = sendMail;
