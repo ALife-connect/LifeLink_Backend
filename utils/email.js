@@ -8,7 +8,7 @@ const sendMail = async (options) => {
 
     const msg = {
       to: options.email,
-      from: `"ALink"<${process.env.userEmail}>`,
+      from: `"ALife"<${process.env.userEmail}>`,
       subject: options.subject,
       text: options.text,
       html: options.html,
