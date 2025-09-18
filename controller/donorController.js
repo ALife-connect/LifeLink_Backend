@@ -63,7 +63,7 @@ exports.register = async (req, res) => {
           otpExpires
         });
         await donor.save();
-        // const token = await jwt.sign({ donorId: donor._id }, process.env.key, { expiresIn: "10mins" });
+        const token = await jwt.sign({ donorId: donor._id }, process.env.key, { expiresIn: "10mins" });
         // const link = `lifelink-xi.vercel.app/verifymail/${token}`
         // `${req.protocol}://${req.get("host")}/api/v1/verify-user/${token}`;
         const firstName = donor.fullName.split(" ")[0];
