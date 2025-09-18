@@ -74,7 +74,7 @@ exports.register =async (req, res) => {
           otpExpires
     });await hospital.save();
 
-      // const token = await jwt.sign({ hospitalId: hospital._id }, process.env.key, { expiresIn: "10mins" });
+       const token = await jwt.sign({ hospitalId: hospital._id }, process.env.key, { expiresIn: "10mins" });
       //   const link = `lifelink-xi.vercel.app/verifymail/${token}`
       //   // `${req.protocol}://${req.get("host")}/api/v1/verify-user/${token}`;
         const hospitalName = hospital.fullName.split(" ")[0];
