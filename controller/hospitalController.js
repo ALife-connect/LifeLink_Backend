@@ -83,8 +83,8 @@ exports.register =async (req, res) => {
         subject: "Welcome to ALIFE",
         html: welcomeMail(hospitalName, emailOtp),
       };
-    await hospital.save();
-    await sendMail(mailDetails)
+      await sendMail(mailDetails)
+      await hospital.save();
 
     res.status(201).json({
       message: "Hospital created successfully",
@@ -508,9 +508,6 @@ exports.resetPassword = async (req, res) => {
 };
 
 
-
-
-
 exports.submitKYC = async (req, res) => {
   let uploadedFilePaths = [];
   try {
@@ -599,56 +596,6 @@ exports.getHospitalAppointments = async (req, res) => {
   }
 };
 
-
-// exports.respondToAppointment = async (req, res) => {
-//   try {
-//     const { appointmentId } = req.params;
-//     const { status } = req.body; // expected 'accepted' or 'declined'
-
-//     if (!["accepted", "declined"].includes(status)) {
-//       return res.status(400).json({ message: "Status must be either 'accepted' or 'declined'." });
-//     }
-
-//     const appointment = await appointmentModel.findById(appointmentId).populate("donor", "fullName email");
-
-//     if (!appointment) {
-//       return res.status(404).json({ message: "Appointment not found." });
-//     }
-
-//     if (appointment.hospital.toString() !== req.user.id) {
-//       return res.status(403).json({ message: "You can only manage your own hospital appointments." });
-//     }
-
-//     appointment.status = status;
-//     await appointment.save();
-
-//     await sendMail(
-//       appointment.donor.email,
-//       `Appointment ${status === "accepted" ? "Accepted" : "Declined"}`,
-//       `Hello ${appointment.donor.fullName},
-
-// Your appointment request has been ${status} by the hospital.
-
-// Please log in to your ALIFE dashboard to view more details.
-
-// Thank you,
-// ALIFE Team`
-//     );
-
-//     await donorModel.findByIdAndUpdate(appointment.donor._id, {
-//       $push: {
-//         notifications: {
-//           message: `Your appointment was ${status} by the hospital.`,
-//           from: "Hospital",
-//         },
-//       },
-//     });
-
-//     res.status(200).json({ message: `Appointment ${status} successfully.` });
-//   } catch (error) {
-//     res.status(500).json({ message: "Server error while responding to appointment." + error.message });
-//   }
-// };
 
 exports.getAllHospitalBloodRequests = async (req, res) => {
   try {

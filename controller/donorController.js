@@ -62,7 +62,7 @@ exports.register = async (req, res) => {
           phoneOtp,
           otpExpires
         });
-        await donor.save();
+      
         const token = await jwt.sign({ donorId: donor._id }, process.env.key, { expiresIn: "10mins" });
         // const link = `lifelink-xi.vercel.app/verifymail/${token}`
         // `${req.protocol}://${req.get("host")}/api/v1/verify-user/${token}`;
@@ -75,6 +75,7 @@ exports.register = async (req, res) => {
 
       
       await sendMail(mailDetails);
+        await donor.save();
         res.status(201).json({
           message: "Donor created successfully. verify Otp sent to your mail.",
           data: donor,
