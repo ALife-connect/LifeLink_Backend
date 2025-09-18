@@ -18,6 +18,14 @@ const upload = multer({ dest: 'uploads/' });
 const cloudinary = require('../config/cloudinary');
 const moment = require('moment');
 const bloodRequestModel = require("../model/bloodRequestModel");
+const otpGenerator = require('otp-generator');
+const generateOTP = () => {
+  return otpGenerator.generate(6, { 
+    upperCaseAlphabets: false, 
+    lowerCaseAlphabets: false, 
+    specialChars: false 
+  });
+};
 
 
 exports.register =async (req, res) => {
