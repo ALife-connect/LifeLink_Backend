@@ -405,15 +405,26 @@ exports.scheduleDonation = async (req, res)=> {
         });
       };
 
+      const appointment = await appointmentModel.create({
+      donor: donor._id,
+      hospital: hospitalId,
+      date: selectedDate,
+      time,
+      status: "pending"
+    });
       const updated = await donorModel.findByIdAndUpdate(req.user._id, { status: 'pending'}, {new: true});
       const token = generatedToken(updated._id);
       res.status(201).json({
         status: true,
+        appointmentId: appointment._id,
         message: "donation appointment scheduled",
         scheduledDate: moment(selectedDate).format('YYYY-MM-DD'),
         scheduledTime: time,
+        status:appointment.status,
+        hospital: hospitalId,
         token
       })
+      
     } catch (error) {
       res.status(500).json({
         status:false,
