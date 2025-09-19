@@ -39,10 +39,10 @@ const swaggerOptions = {
       version: "1.0.0",
       description: "API for managing blood donors",
       license: {
-        name: "base:https://lifelink-7pau.onrender.com/api/v1",
+        name: "base:https://lifelink-7pau.onrender.com/api/v1 \n https://alife-nine.vercel.app/api/v1",
       }
     },
-    servers: [{ url: "https://lifelink-7pau.onrender.com/api/v1",
+    servers: [{ url: "https://lifelink-7pau.onrender.com/api/v1 \n https://alife-nine.vercel.app/api/v1",
         description: 'production Server'
      },
         {url: `http://localhost:${PORT}/api/v1`, 
@@ -84,5 +84,5 @@ app.use('/api/v1', adminRoutes);
 
 app.listen(PORT, ()=>{
     console.log(`Server is listening to PORT: ${PORT}`);
-    console.log(`Swagger docs available at https://lifelink-7pau.onrender.com/api-docs`);
+    console.log(`Swagger docs available at https://lifelink-7pau.onrender.com/api-docs \n https://alife-nine.vercel.app/api-docs`);
 }); 
