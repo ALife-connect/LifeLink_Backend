@@ -44,7 +44,7 @@ const swaggerOptions = {
       version: "1.0.0",
       description: "API for managing blood donors",
       license: {
-        name: "base:https://lifelink-7pau.onrender.com/api/v1 \n base:https://alife-nine.vercel.app/api/v1",
+        name: " ALIFE",
       }
     },
     servers: [
