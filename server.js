@@ -74,3 +74,22 @@ const swaggerOptions = {
 },
   apis: ["./routes/*.js"], // Load API documentation from route files
 };
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+// Use Routers    
+app.get('/', (req, res)=>{
+    res.send('Welcome to LifeLink')
+})
+app.use('/api/v1', donorRouter);
+app.use('/api/v1', transactionRouter);
+app.use('/api/v1', hospitalRoutes);
+app.use('/api/v1', messageRoute);
+app.use('/api/v1', adminRoutes);
+
+
+app.listen(PORT, ()=>{
+    console.log(`Server is listening to PORT: ${PORT}`);
+    console.log(`Swagger docs available at https://lifelink-7pau.onrender.com/api-docs \n https://alife-nine.vercel.app/api-docs`);
+}); 
