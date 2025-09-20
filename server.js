@@ -23,7 +23,12 @@ if (!fs.existsSync(uploadsDir)) {
 const app = express();
 
 app.use(express.json());
-app.use(cors({origin: '*'}));
+app.use(cors({
+  origin: [
+    "https://lifelink-7pau.onrender.com",
+    "https://alife-nine.vercel.app"
+  ],
+}));
 app.use(morgan('dev'));
 
 
@@ -39,7 +44,7 @@ const swaggerOptions = {
       version: "1.0.0",
       description: "API for managing blood donors",
       license: {
-        name: "base:https://lifelink-7pau.onrender.com/api/v1 \n https://alife-nine.vercel.app/api/v1",
+        name: "base:https://lifelink-7pau.onrender.com/api/v1 \n base:https://alife-nine.vercel.app/api/v1",
       }
     },
     servers: [
@@ -76,7 +81,7 @@ const swaggerOptions = {
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs, { explorer: true}));
 
 // Use Routers    
 app.get('/', (req, res)=>{
