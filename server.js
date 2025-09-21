@@ -23,12 +23,29 @@ if (!fs.existsSync(uploadsDir)) {
 const app = express();
 
 app.use(express.json());
+const allowedOrigins = [
+  "https://lifelink-7pau.onrender.com", 
+  "https://alife-nine.vercel.app"   
+];
+
 app.use(cors({
-  origin: [
-    "https://lifelink-7pau.onrender.com",
-    "https://alife-nine.vercel.app"
-  ],
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); 
+    if (
+      allowedOrigins.includes(origin) ||
+      /^https:\/\/alife-nine.*\.vercel\.app$/.test(origin) 
+    ) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS not allowed for this origin: " + origin));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
+app.options("*", cors());
+
 app.use(morgan('dev'));
 
 
@@ -96,5 +113,6 @@ app.use('/api/v1', adminRoutes);
 
 app.listen(PORT, ()=>{
     console.log(`Server is listening to PORT: ${PORT}`);
-    console.log(`Swagger docs available at https://lifelink-7pau.onrender.com/api-docs \n https://alife-nine.vercel.app/api-docs`);
+    console.log(` Render: https://lifelink-7pau.onrender.com/api-docs`);
+    console.log(` Vercel: https://alife-nine.vercel.app/api-docs`);
 }); 
