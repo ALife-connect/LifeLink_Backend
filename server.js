@@ -28,23 +28,11 @@ const allowedOrigins = [
   "https://alife-nine.vercel.app"   
 ];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); 
-    if (
-      allowedOrigins.includes(origin) ||
-      /^https:\/\/alife-nine.*\.vercel\.app$/.test(origin) 
-    ) {
-      callback(null, true);
-    } else {
-      callback(new Error("CORS not allowed for this origin: " + origin));
-    }
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
-app.options("*", cors());
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 
 app.use(morgan('dev'));
 
