@@ -22,16 +22,15 @@ if (!fs.existsSync(uploadsDir)) {
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json({ limit: "10mb" })); 
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 const allowedOrigins = [
   "https://lifelink-7pau.onrender.com", 
   "https://alife-nine.vercel.app"   
 ];
 
 app.use(
-  cors({
-    origin: "*",
-  })
+  cors({origin: "*",})
 );
 
 app.use(morgan('dev'));

@@ -586,7 +586,7 @@ exports.getHospitalAppointments = async (req, res) => {
     const appointments = await appointmentModel
       .find({ hospital: req.user._id })
       .populate("donor", "fullName email bloodType phoneNumber")
-      .sort({ createdAt: -1 }); // Latest first
+      .sort({ createdAt: -1 }); 
 
     res.status(200).json({
       message: 'Appointment fetched successfully',

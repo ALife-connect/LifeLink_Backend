@@ -665,7 +665,7 @@ router.post('/kyc/kyc', auth, roleAuth(['hospital']), kycUpload, submitKYC);
  *           type: string
  *       - in: body
  *         name: status
- *         description: Status to update (confirmed, cancelled, or rescheduled). If rescheduling, provide new date and time.
+ *         description: Status to update (accepted, cancel, or rescheduled). If rescheduling, provide new date and time.
  *         required: true
  *         schema:
  *           type: object
@@ -674,7 +674,7 @@ router.post('/kyc/kyc', auth, roleAuth(['hospital']), kycUpload, submitKYC);
  *           properties:
  *             status:
  *               type: string
- *               enum: [confirmed, cancelled, rescheduled]
+ *               enum: [accepted, cancel, rescheduled]
  *             newDate:
  *               type: string
  *               format: date
