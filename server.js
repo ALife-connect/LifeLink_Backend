@@ -43,7 +43,7 @@ const swaggerOptions = {
     info: { 
 
 
-      title: "LifeLink Documentation",
+      title: "Alife Documentation",
 
       version: "1.0.0",
       description: "API for managing blood donors",
@@ -89,7 +89,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs, { explorer: t
 
 // Use Routers    
 app.get('/', (req, res)=>{
-    res.send('Welcome to LifeLink')
+    res.send('Welcome to Alife')
 })
 app.use('/api/v1', donorRouter);
 app.use('/api/v1', transactionRouter);

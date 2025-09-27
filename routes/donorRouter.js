@@ -107,7 +107,7 @@ router.get('/-request/:bloodRequestId', auth,  oneBloodRequestById);
  *                 example: Life Link
  *               email:
  *                 type: string
- *                 example: LifeLink@mail.com
+ *                 example: Alife@gmail.com
  *               password:
  *                 type: string
  *                 example: StrongPassword123
@@ -149,7 +149,7 @@ router.post("/register", registerValidate, register);
  *             properties:
  *               email:
  *                 type: string
- *                 example: lifelink@mail.com
+ *                 example: Alife@gmail.com
  *               otp:
  *                 type: string
  *                 example: "123456"
@@ -184,7 +184,7 @@ router.post('/verify-otp', verifyDonors);
  *             properties:
  *               email:
  *                 type: string
- *                 example: lifelink@mail.com
+ *                 example: Alife@gmail.com
  *     responses:
  *       200:
  *         description: A new OTP has been sent to the email
@@ -213,7 +213,7 @@ router.post('/resend-otp', resendVerificationEmail);
  *             properties:
  *               email:
  *                 type: string
- *                 example: LifeLink@mail.com
+ *                 example: Alife@gmail.com
  *               password:
  *                 type: string
  *                 example: StrongPassword123
@@ -393,7 +393,7 @@ router.post("/schedule", auth, scheduleDonation);
  *                             example: 66147b8a2bb29c76e9a83b22
  *                           name:
  *                             type: string
- *                             example: LifeLink General Hospital
+ *                             example: Alife General Hospital
  *                           address:
  *                             type: string
  *                             example: 123 Blood Drive Avenue, Lagos
@@ -491,7 +491,7 @@ router.get("/hospitalDonationIn/:status", auth, getHospitalDonationsByStatus);
  *                             example: 66147b8a2bb29c76e9a83b22
  *                           name:
  *                             type: string
- *                             example: LifeLink General Hospital
+ *                             example: Alife General Hospital
  *                           address:
  *                             type: string
  *                             example: 123 Blood Drive Avenue, Lagos
@@ -823,7 +823,7 @@ router.put('/update-profile', auth, UpdateDonorDetails);
  *             properties:
  *               email:
  *                 type: string
- *                 example: LifeLink@Mail.com
+ *                 example: Alife@gmail.com
  *     responses:
  *       200:
  *         description: Reset password otp sent successfully
