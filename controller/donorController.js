@@ -629,29 +629,34 @@ exports.UpdateDonorDetails = async (req, res) =>{
   }
 };
 
+// 🔹 Forgot Password (Donor + Hospital)
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ status: false, message: "Email is required" });
+    }
+    let user = await donorModel.findOne({ email: email.toLowerCase() });
+    let userType = "donor";
 
-    const user = await donorModel.findOne({ email: email.toLowerCase() });
     if (!user) {
-      return res.status(404).json({
-        status: false,
-        message: 'Email not found'
-      });
+      user = await hospitalModel.findOne({ email: email.toLowerCase() });
+      userType = "hospital";
+    }
+
+    if (!user) {
+      return res.status(404).json({ status: false, message: "Email not found" });
     }
 
     // generate OTP (6 digits)
     const otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
-      specialChars: false
+      specialChars: false,
     });
 
-    
-    const expires = Date.now() + 10 * 60 * 1000;
+    const expires = Date.now() + 10 * 60 * 1000; // 10 min expiry
 
-    
     user.resetOtp = otp;
     user.resetOtpExpires = expires;
     await user.save();
@@ -659,31 +664,24 @@ exports.forgotPassword = async (req, res) => {
     // email subject + message
     const subject = "Reset Password Request";
     const html = `
-      <p>Hello ${user.fullName.split(" ")[0]},</p>
+      <p>Hello ${user.fullName?.split(" ")[0] || user.name},</p>
       <p>You requested to reset your password. Use the OTP below:</p>
       <h2>${otp}</h2>
       <p>This OTP will expire in 10 minutes.</p>
     `;
 
-    await sendMail({
-      subject,
-      email: user.email,
-      html
-    });
+    await sendMail({ subject, email: user.email, html });
 
     res.status(200).json({
       status: true,
-      message: 'Reset password OTP sent successfully' 
+      message: `Reset password OTP sent successfully to ${userType}`,
     });
-
   } catch (error) {
-    res.status(500).json({
-      status: false,
-      message: error.message
-    });
+    res.status(500).json({ status: false, message: error.message });
   }
 };
 
+// 🔹 Reset New Password (Donor + Hospital)
 exports.resetNewPassword = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
@@ -691,98 +689,79 @@ exports.resetNewPassword = async (req, res) => {
     if (!email || !otp || !newPassword) {
       return res.status(400).json({
         status: false,
-        message: "Email, OTP, and new password are required"
+        message: "Email, OTP, and new password are required",
       });
     }
 
-    // find donor
-    const donor = await donorModel.findOne({ email: email.toLowerCase() });
-    if (!donor) {
-      return res.status(404).json({
-        status: false,
-        message: "Donor not found"
-      });
+    let user = await donorModel.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      user = await hospitalModel.findOne({ email: email.toLowerCase() });
     }
 
-    // check otp validity
-    if (!donor.resetOtp || !donor.resetOtpExpires) {
-      return res.status(400).json({
-        status: false,
-        message: "No OTP request found. Please request a new one."
-      });
+    if (!user) {
+      return res.status(404).json({ status: false, message: "User not found" });
     }
 
-    if (donor.resetOtp !== otp) {
-      return res.status(400).json({
-        status: false,
-        message: "Invalid OTP"
-      });
+    if (!user.resetOtp || !user.resetOtpExpires) {
+      return res.status(400).json({ status: false, message: "No OTP request found. Please request a new one." });
     }
 
-    if (donor.resetOtpExpires < Date.now()) {
-      return res.status(400).json({
-        status: false,
-        message: "OTP expired. Please request a new one."
-      });
+    if (user.resetOtp !== otp) {
+      return res.status(400).json({ status: false, message: "Invalid OTP" });
     }
 
-    // hash new password
+    if (user.resetOtpExpires < Date.now()) {
+      return res.status(400).json({ status: false, message: "OTP expired. Please request a new one." });
+    }
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-    donor.password = hashedPassword;
-    donor.resetOtp = undefined;
-    donor.resetOtpExpires = undefined;
+    user.password = hashedPassword;
+    user.resetOtp = undefined;
+    user.resetOtpExpires = undefined;
+    await user.save();
 
-    await donor.save();
-
-    res.status(200).json({
-      status: true,
-      message: "Password changed successfully"
-    });
-
+    res.status(200).json({ status: true, message: "Password changed successfully" });
   } catch (error) {
-    res.status(500).json({
-      status: false,
-      message: error.message
-    });
+    res.status(500).json({ status: false, message: error.message });
   }
 };
 
- 
-exports.changePassword = async (req, res) =>{
-      try{
-          const { currentPassword, newPassword } = req.body;
-          if(!currentPassword || !newPassword) {
-            return res.status(404).json({
-            message:  'Please provide both current and new password.'
-            })
-          }
-          const checkdonor = await donorModel.findById(req.user.id )
-          if(!checkdonor){
-              return res.status(404).json({
-                  message: 'Donor not found'
-              })
-          }
-          const isMatch = await bcrypt.compare(currentPassword, checkdonor.password);
-          if (!isMatch) {
-            return res.status(400).json({ message: 'Current password is incorrect.' });
-          }
-  
+// 🔹 Change Password (Donor + Hospital)
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "Please provide both current and new password." });
+    }
 
-          const salt = await bcrypt.genSaltSync(10);
-          const hashedPassword = await bcrypt.hashSync(newPassword, salt);
-          checkdonor.password = hashedPassword;
-          await checkdonor.save();
-          res.status(200).json({
-              message: 'Password changed successfully'
-          })
-      }catch(error){
-          res.status(500).json({
-              message: "internal server error" + error.message
-          })
-      }
-  };
+    // Check both donor & hospital by req.user.id
+    let user = await donorModel.findById(req.user.id);
+    if (!user) {
+      user = await hospitalModel.findById(req.user.id);
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Current password is incorrect." });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error: " + error.message });
+  }
+};
+
 
 exports.viewHospitals = async (req, res) => {
     try {
