@@ -185,7 +185,7 @@ exports.resendVerificationEmail = async (req, res) => {
 
     
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // expires in 10 mins
+    const otpExpires = new Date(Date.now() + 1 * 60 * 1000);
 
     
     user.otp = otp;
@@ -629,7 +629,6 @@ exports.UpdateDonorDetails = async (req, res) =>{
   }
 };
 
-// 🔹 Forgot Password (Donor + Hospital)
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -681,7 +680,6 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-// 🔹 Reset New Password (Donor + Hospital)
 exports.resetNewPassword = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
