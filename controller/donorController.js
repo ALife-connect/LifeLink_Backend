@@ -89,9 +89,9 @@ exports.register = async (req, res) => {
 };
 
 exports.verifyDonors = async (req, res) => {
+
   try {
     const { email, phoneNumber, otp } = req.body;
-
     
     if ((!email && !phoneNumber) || !otp) {
       return res.status(400).json({
@@ -115,7 +115,6 @@ exports.verifyDonors = async (req, res) => {
       }
     }
 
- 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -126,9 +125,8 @@ exports.verifyDonors = async (req, res) => {
         message: "User has already been verified. Please proceed to login."
       });
     }
-
     if (
-      user.otp !== otp ||
+      user.emailOtp !== otp ||
       !user.otpExpires ||
       user.otpExpires < new Date()
     ) {
@@ -185,7 +183,7 @@ exports.resendVerificationEmail = async (req, res) => {
 
     
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = new Date(Date.now() + 1 * 60 * 1000);
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
 
     
     user.otp = otp;
