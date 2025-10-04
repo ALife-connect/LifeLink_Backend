@@ -137,7 +137,7 @@ exports.verifyDonors = async (req, res) => {
     user.isVerified = true;
     user.emailOtp = undefined; 
     user.otpExpires = undefined;
-
+    await user.save()
     return res.status(200).json({
       status: true,
       message: "Account verified successfully"
