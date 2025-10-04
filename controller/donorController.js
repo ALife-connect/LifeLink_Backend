@@ -63,7 +63,7 @@ exports.register = async (req, res) => {
           otpExpires
         });
       
-        const token = await jwt.sign({ donorId: donor._id }, process.env.key, { expiresIn: "10mins" });
+        const token = await jwt.sign({ donorId: donor._id }, process.env.key, { expiresIn: "20mins" });
         // const link = `lifelink-xi.vercel.app/verifymail/${token}`
         // `${req.protocol}://${req.get("host")}/api/v1/verify-user/${token}`;
         const firstName = donor.fullName.split(" ")[0];
@@ -135,7 +135,7 @@ exports.verifyDonors = async (req, res) => {
 
     
     user.isVerified = true;
-    user.otp = undefined; 
+    user.emailOtp = undefined; 
     user.otpExpires = undefined;
 
     return res.status(200).json({
@@ -186,7 +186,7 @@ exports.resendVerificationEmail = async (req, res) => {
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
 
     
-    user.otp = otp;
+    user.emailOtp = otp;
     user.otpExpires = otpExpires;
     await user.save();
 
