@@ -228,7 +228,7 @@ exports.login = async (req, res)=>{
           })
         }
     
-      const donor = await donorModel.findOne({email: email.toLowerCase() });
+      const donor = await donorModel.findOne({email:email.toLowerCase() });
       if(donor == null){
         return res.status(404).json({
           message: 'Invalid Credentials'
@@ -296,13 +296,13 @@ exports.getOneDonorById = async (req, res)=>{
 exports.getDashboard = async (req, res) => {
     try {
       const token =generatedToken(req.user._id);
-      console.log(token)
+     
       if (!token){
         return res.status(400).json({
           message: 'unable to generate token'
         });
       }
-      console.log(req.user);
+      
       
       res.status(200).json({
         message: req.user,
@@ -576,7 +576,7 @@ exports.updateProfile= async (req, res)=>{
         const result = await cloudinary.uploader.upload(req.file.path)
         const updatedDonor = await donorModel.findByIdAndUpdate(req.user._id, {profilePics:result.secure_url}, {new:true});
      
-    console.log(updatedDonor)
+    
     // Send a success response
     res.status(201).json({
       message: 'profile picture uploaded successfully',
@@ -898,7 +898,7 @@ exports.deleteDonor = async (req, res) => {
     }
   }
 
-  exports.oneBloodRequestById = async (req, res) => {
+exports.oneBloodRequestById = async (req, res) => {
     try {
       const donor = req.user;
   
