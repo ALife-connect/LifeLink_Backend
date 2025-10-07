@@ -16,7 +16,7 @@ exports.adminRegister = async (req, res) => {
   try {
     const { fullName, email, role, password } = req.body;
 
-    console.log('Request body:', req.body);
+    
     // Validate input
     if (!fullName || !email || !role || !password) {
       return res.status(400).json({
@@ -149,16 +149,14 @@ catch (err) {
 exports.approveKYC = async (req, res) => { 
   try {
     const { kycId } = req.params;
-    console.log("Incoming KYC ID:", kycId);
 
     // Find the KYC document
     const kyc = await KYC.findById(kycId);
     if (!kyc) {
-      console.log("KYC not found");
+     
       return res.status(404).json({ message: "KYC not found" });
     }
-    console.log("KYC hospital ID:", kyc.hospital);
-    console.log(" KYC found:", kyc);
+    
 
     // Check if KYC is already approved or declined
     if (kyc.status === 'approved' || kyc.status === 'declined') {
@@ -168,12 +166,10 @@ exports.approveKYC = async (req, res) => {
     // Find the associated hospital using kyc.hospital
     const hospital = await hospitalModel.findById(kyc.hospital);
     if (!hospital) {
-      console.log("Hospital not found for KYC:", kyc.hospital);
-      console.log(" Hospital not found");
       return res.status(404).json({ message: "Hospital not found" });
     }
 
-    console.log(" Hospital found:", hospital);
+    
 
     // Update the KYC document status to "approved"
     kyc.status = "approved";
@@ -183,7 +179,7 @@ exports.approveKYC = async (req, res) => {
     hospital.kycVerified = true;
     await hospital.save();
 
-    console.log(" KYC approved and hospital verified");
+    
 
     return res.status(200).json({ message: "KYC approved successfully" });
 
@@ -196,12 +192,12 @@ exports.approveKYC = async (req, res) => {
 
 exports.declineKYC = async (req, res) => { 
   const { kycId } = req.params;  // Access the kycId from the route parameter
-  console.log("Decline KYC hit with ID:", kycId);
+  
 
   try {
     // Find the KYC document by the given kycId
     const kycDocument = await KYC.findById(kycId); // Use kycId here to find the document
-    console.log('KYC Document:', kycDocument);
+    
 
     if (!kycDocument) {
       return res.status(404).json({ message: 'KYC document not found' });
@@ -212,17 +208,16 @@ exports.declineKYC = async (req, res) => {
       return res.status(400).json({ message: 'Cannot decline KYC in its current state' });
     }
 
-    // Log the hospital ID in the KYC document
-    console.log('Hospital ID in KYC:', kycDocument.hospital);
+    
 
     // Update KYC status to declined
     kycDocument.status = 'declined';
     await kycDocument.save();
-    console.log('kycDocument.hospital:', kycDocument.hospital);
+    
 
     // Update the hospital's KYC verification flag
     const hospital = await hospitalModel.findById(kycDocument.hospital); // kycDocument.hospital should have the hospitalId
-    console.log('Hospital:', hospital);
+   
 
     if (!hospital) {
       return res.status(404).json({ message: 'Hospital not found' });
