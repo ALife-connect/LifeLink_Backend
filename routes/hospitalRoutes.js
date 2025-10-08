@@ -646,63 +646,6 @@ const kycUpload = upload.fields([
 router.post('/kyc/kyc', auth, roleAuth(['hospital']), kycUpload, submitKYC);
 
 
-/**
- * @swagger
- * /respond/{appointmentId}:
- *   patch:
- *     summary: Hospital responds to an appointment request
- *     description: Confirm, cancel, or reschedule a donor's appointment request.
- *     tags:
- *       - Hospital
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: appointmentId
- *         required: true
- *         description: ID of the appointment to respond to
- *         schema:
- *           type: string
- *       - in: body
- *         name: status
- *         description: Status to update (accepted, cancel, or rescheduled). If rescheduling, provide new date and time.
- *         required: true
- *         schema:
- *           type: object
- *           required:
- *             - status
- *           properties:
- *             status:
- *               type: string
- *               enum: [accepted, cancel, rescheduled]
- *             newDate:
- *               type: string
- *               format: date
- *               description: (Required if rescheduling) New appointment date
- *             newTime:
- *               type: string
- *               description: (Required if rescheduling) New appointment time
- *     responses:
- *       200:
- *         description: Appointment updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 appointment:
- *                   type: object
- *       400:
- *         description: Validation error (e.g., invalid status, missing fields)
- *       404:
- *         description: Appointment not found
- *       500:
- *         description: Server error
- */
-router.patch('/respond/:appointmentId', auth, roleAuth(['hospital']), respondToAppointment);
-
 
 
 
