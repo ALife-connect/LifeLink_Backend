@@ -701,7 +701,7 @@ router.post('/kyc/kyc', auth, roleAuth(['hospital']), kycUpload, submitKYC);
  *       500:
  *         description: Server error
  */
-router.patch('/respond/:appointmentId', roleAuth(['hospital']), respondToAppointment);
+router.patch('/respond/:appointmentId', auth, roleAuth(['hospital']), respondToAppointment);
 
 
 
