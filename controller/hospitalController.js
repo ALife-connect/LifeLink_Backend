@@ -161,7 +161,7 @@ exports.login = async (req, res) => {
       res.status(500).json({ message: 'Server error', error: err.message });
     }
   };
-  exports.submitBloodRequest = async (req, res) => { 
+exports.submitBloodRequest = async (req, res) => { 
     try {
       let { bloodGroup, numberOfPints, preferredDate, urgencyLevel, amount } = req.body;
 
@@ -458,7 +458,7 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-// ✅ Step 2: Reset password with OTP
+
 exports.resetPassword = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
@@ -704,7 +704,7 @@ exports.respondToAppointment = async (req, res) => {
       notificationMessage = `Your appointment has been rescheduled to ${appointment.date.toDateString()} at ${appointment.time}.`;
     }
 
-    
+    await appointment.save()
     await sendMail({
       email: appointment.donor.email,
       subject: emailSubject,

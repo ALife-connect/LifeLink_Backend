@@ -574,7 +574,7 @@ router.get('/hospital/profile/one', auth, roleAuth(['hospital']), getHospitalPro
 
 /**
  * @swagger
- * /hospital/search-donors:
+ * /hospital/searchDonors:
  *   get:
  *     summary: Search for available blood donors
  *     tags: [Hospital]
@@ -596,7 +596,7 @@ router.get('/hospital/profile/one', auth, roleAuth(['hospital']), getHospitalPro
  *       500:
  *         description: Internal server error
  */
-router.get('/hospital/search-donors', auth, roleAuth(['hospital']), kycMiddleware, searchForDonors);
+router.get('/hospital/searchDonors', auth, roleAuth(['hospital']), kycMiddleware, searchForDonors);
 
 
 const kycUpload = upload.fields([
@@ -653,7 +653,7 @@ router.post('/kyc/kyc', auth, roleAuth(['hospital']), kycUpload, submitKYC);
  *     summary: Hospital responds to an appointment request
  *     description: Confirm, cancel, or reschedule a donor's appointment request.
  *     tags:
- *       - Appointments
+ *       - Hospital
  *     security:
  *       - bearerAuth: []
  *     parameters:
