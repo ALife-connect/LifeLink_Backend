@@ -7,6 +7,8 @@ const adminModel  = require("../model/adminModel");
 const { resetMail } = require("../utils/resetMail"); 
 const { sendEmail } = require("../utils/sendEmail");
 const KYC = require('../model/kycModel');
+const { appointmentModel } = require('../model/appointmentModel');
+const bloodRequestModel = require('../model/bloodRequestModel');
 require("dotenv").config();
 require("../utils/resetMail");
 
@@ -301,7 +303,7 @@ exports.resetPassword = async (req, res) => {
 };
 
   
-// Get all KYC submissions (for admin)
+
 exports.getAllKYCSubmissions = async (req, res) => {
   try {
     const kycs = await KYC.find()
@@ -312,5 +314,35 @@ exports.getAllKYCSubmissions = async (req, res) => {
   } catch (error) {
     console.error('Error fetching KYC submissions:', error);
     res.status(500).json({ message: 'Failed to retrieve KYC submissions', error: error.message });
+  }
+};
+
+
+exports.deleteExpiredRecords = async (req, res) => {
+  try {
+    const currentDate = new Date();
+
+    // Delete appointments where the date has passed
+    const deletedAppointments = await appointmentModel.deleteMany({
+      date: { $lt: currentDate },
+    });
+
+    // Delete blood requests where preferred date has passed
+    const deletedBloodRequests = await bloodRequestModel.deleteMany({
+      preferredDate: { $lt: currentDate },
+    });
+     console.log(`🧹 Deleted expired records:
+    - Appointments: ${deletedAppointments.deletedCount}
+    - Blood Requests: ${deletedBloodRequests.deletedCount}`);
+     return {
+      deletedAppointments: deletedAppointments.deletedCount,
+      deletedBloodRequests: deletedBloodRequests.deletedCount,
+    };
+
+  } catch (error) {
+    console.error('Error deleting expired records:', error.message);
+    throw error;
+    
+   
   }
 };

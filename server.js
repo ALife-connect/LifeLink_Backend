@@ -13,6 +13,8 @@ const swaggerJsDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const fs = require('fs');
 const path = require('path');
+const cron = require('node-cron');
+const { deleteExpiredRecords } = require('./controller/adminController');
 
 
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -87,6 +89,12 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs, { explorer: true}));
 
+// Schedule task: every day at midnight
+cron.schedule('0 0 * * *', async () => {
+  console.log('🕛 Running daily cleanup of expired records...');
+  await deleteExpiredRecords();
+});
+
 // Use Routers    
 app.get('/', (req, res)=>{
     res.send('Welcome to Alife')
@@ -97,6 +105,7 @@ app.use('/api/v1', hospitalRoutes);
 app.use('/api/v1', messageRoute);
 app.use('/api/v1', adminRoutes);
 
+deleteExpiredRecords();
 
 app.listen(PORT, ()=>{
     console.log(`Server is listening to PORT: ${PORT}`);
