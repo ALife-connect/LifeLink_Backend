@@ -1,7 +1,7 @@
 const axios = require('axios');
 const dotenv = require('dotenv');
 
-dotenv.config();
+    dotenv.config();
 
 
 const sendMail = async ({email, subject, text, html = "" }) => {
@@ -23,7 +23,7 @@ const sendMail = async ({email, subject, text, html = "" }) => {
             },
             data: {
                 sender: {
-                    name: 'TSAN_Platform',
+                    name: 'ALIVE',
                     email: process.env.BREVO_SENDER_EMAIL
                 },  
                 to :[{
