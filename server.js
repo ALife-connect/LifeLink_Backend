@@ -27,7 +27,7 @@ const app = express();
 app.use(express.json({ limit: "10mb" })); 
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 const allowedOrigins = [
-  "https://lifelink-7pau.onrender.com", 
+  "https://lifelink-2dak.onrender.com", 
   "https://alife-nine.vercel.app"   
 ];
 
@@ -55,7 +55,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: "https://lifelink-7pau.onrender.com/api/v1",
+        url: "https://lifelink-2dak.onrender.com//api/v1",
         description: "Production Server 1",
       },
       {
@@ -109,6 +109,6 @@ deleteExpiredRecords();
 
 app.listen(PORT, ()=>{
     console.log(`Server is listening to PORT: ${PORT}`);
-    console.log(` Render: https://lifelink-7pau.onrender.com/api-docs`);
+    console.log(` Render: https://lifelink-2dak.onrender.com/api-docs`);
     console.log(` Vercel: https://alife-nine.vercel.app/api-docs`);
 }); 
