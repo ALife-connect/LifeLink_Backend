@@ -55,7 +55,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: "https://lifelink-2dak.onrender.com//api/v1",
+        url: "https://lifelink-2dak.onrender.com/api/v1",
         description: "Production Server 1",
       },
       {
