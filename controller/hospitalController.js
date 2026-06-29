@@ -508,6 +508,7 @@ exports.resetPassword = async (req, res) => {
 };
 
 
+
 exports.submitKYC = async (req, res) => {
   let uploadedFilePaths = [];
   try {
