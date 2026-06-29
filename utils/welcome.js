@@ -6,7 +6,7 @@ const welcomeMail = (fullName, otp) => {
         <div style="padding:30px; color:#333;">
           <h2 style="margin-top:0; color:#2e6da4;">Hello ${fullName.split(" ")[0]},</h2>
           <p style="font-size:15px; line-height:1.6;">
-            Thank you for registering on ALIFE. Here is your code to activate your account:
+            Thank you for registering on SLODAT. Here is your code to activate your account:
           </p>
 
           <!-- OTP -->
@@ -25,13 +25,13 @@ const welcomeMail = (fullName, otp) => {
           
         <p style="margin-top:25px; font-size:14px; color:#444;">
           With care,<br/>
-          <strong style="color:#2e6da4;">The ALIFE Team</strong>
+          <strong style="color:#2e6da4;">The SLODAT Team</strong>
         </p>
       </div>
 
       <!-- Footer -->
       <div style="background:#f0f4fa; padding:15px; text-align:center; font-size:12px; color:#888;">
-        © ${new Date().getFullYear()} 🌹ALIFE. All rights reserved.
+        © ${new Date().getFullYear()} SLODAT. All rights reserved.
      
         </div>
       </div>
