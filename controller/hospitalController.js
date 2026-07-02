@@ -537,15 +537,15 @@ exports.submitKYC = async (req, res) => {
         await KYC.findByIdAndDelete(existingKYC._id);
       }
     }
-
     
-    const facilityImageUpload = await cloudinary.uploader.upload(files.facilityImage[0].path);
-    const certificateUpload = await cloudinary.uploader.upload(files.accreditedCertificate[0].path);
-    const utilityBillUpload = await cloudinary.uploader.upload(files.utilityBill[0].path);
-
     // Track uploaded local files to unlink later
     uploadedFilePaths.push(files.facilityImage[0].path, files.accreditedCertificate[0].path, files.utilityBill[0].path);
 
+    const[facilityImageUpload, certificateUpload, utilityBillUpload] = await Promise.all([
+      cloudinary.uploader.upload(files.facilityImage[0].path),
+      cloudinary.uploader.upload(files.accreditedCertificate[0].path),
+      cloudinary.uploader.upload(files.utilityBill[0].path)
+    ]);
     // Save new KYC record
     const kycData = await KYC.create({
       hospital: hospitalId,
